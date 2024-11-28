@@ -11,32 +11,133 @@ public class Maze {
 	
 //	instance variables you may need
 //	a variable storing the graph, a variable storing the id of the starting node, a variable storing the id of the end node
-//	a variable storing the read number of coins, maybe even a variable storing the path so far so that you don't perform accidental 
+//	a variable storing the read number of coins, maybe even a variable storing the path so far so that you don't perform accidental
 //	(and unnecessary cycles).
-//	if you maintain nodes on a path in a list, be careful to make a list of GraphNodes, 
+//	if you maintain nodes on a path in a list, be careful to make a list of GraphNodes,
 //	otherwise removal from the list is going to behave in a weird way. 
 //	REMEMBER your nodes have a field mark.. maybe that field could be useful to avoid cycles...
-	
+//	you may also want to have a variable storing the number of coins you have collected so far
+
+	// the graph of the maze
+	private Graph graph;
+	 // The starting node
+	private int start;
+	 // The end node
+	private int end;
+	 // The number of coins
+	private int coins;
+	//the path
+	private List<GraphNode> path;
+	//the number of coins collected
+	private int coinsCollected;
+
+	/**
+	 * Constructor for the maze
+	 * @param inputFile the input file
+	 * @throws MazeException if the maze is invalid
+	 */
 
 	public Maze(String inputFile) throws MazeException {
 //		initialize your graph variable by reading the input file!
 //		to maintain your code as clean and easy to debug as possible use the provided private helper method
+//		readInput to read the input file and initialize your graph variable
+		//initialize the path
+		path = new ArrayList<>();
+		//initialize the coins collected
+		coinsCollected = 0;
+		//initialize the graph
+		graph = new Graph(1);
+		//initialize the start
+		start = 0;
+		//initialize the end
+		end = 0;
+		//initialize the coins
+		coins = 0;
+		//read the input file
+		try {
+			BufferedReader inputReader = new BufferedReader(new FileReader(new File(inputFile)));
+			readInput(inputReader);
+		} catch (IOException | GraphException e) {
+			throw new MazeException("Error reading maze file");
+		}
+
 	}
 
+	/**
+	 * Get the graph
+	 * @return the graph
+	 */
 	public Graph getGraph() {
 //		return your graph
+		return graph;
 	}
 
+	/**
+	 * Solve the maze
+	 * @return the path
+	 */
 	public Iterator<GraphNode> solve() {
 //		simply call your private DFS. If you come up with a different approach that's ok too.
 //		remember to always return an Iterator or null
+		try {
+			return DFS(coins, graph.getNode(start));
+		} catch (GraphException e) {
+			return null;
+		}
 	}
 
+	/**
+	 * Get the number of coins
+	 * @return the number of coins
+	 */
+
 	private Iterator<GraphNode> DFS(int k, GraphNode go) throws GraphException {
-//		perform a DFS of your graph. Reduce your k which represents the remaining coins
-//		start with the base case
-//		remember to return null if you didn't find a path
+		//base case
+		if (go.getName() == end) {
+			path.add(go);
+			return path.iterator();
+		}
+		//mark the node
+		go.mark(true);
+		//add the node to the path
+		path.add(go);
+		//get the edges
+		Iterator<GraphEdge> edges = graph.incidentEdges(go);
+		//iterate over the edges
+		while (edges.hasNext()) {
+			GraphEdge edge = edges.next();
+			//get the node
+			GraphNode node = edge.secondEndpoint();
+			//check if the node is marked
+			if (!node.isMarked()) {
+				//check if the node has coins
+				if (node.getName() == coins) {
+					//collect the coins
+					coinsCollected++;
+				}
+				//check if the node has been visited
+				if (!path.contains(node)) {
+					//check if the node has been visited
+					if (coinsCollected < k) {
+						//recursive call
+						Iterator<GraphNode> path = DFS(k, node);
+						//check if the path is not null
+						if (path != null) {
+							//return the path
+							return path;
+						}
+					}
+				}
+			}
+		}
+		//remove the node from the path
+		path.remove(go);
+		//unmark the node
+		go.mark(false);
+		//return null
+		return null;
 	}
+
 
 	private void readInput(BufferedReader inputReader) throws IOException, GraphException {
 //		Read the values S, A, L, and k
