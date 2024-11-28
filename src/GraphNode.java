@@ -1,8 +1,8 @@
 
 public class GraphNode {
 
-	public int name;
-	public boolean marked;
+	private int name;
+	private boolean marked;
 	
 	public GraphNode(int name) {
 		this.name = name;
