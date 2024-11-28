@@ -42,10 +42,15 @@ public class Graph implements GraphADT {
 //		create and insert the edge
 //		REMEMBER, an edge is accessible from both endpoints, so make sure you add it as an edge for both end nodes
 	//create the edge
+
+		//check if the nodes exist
+		if (!nodes.containsKey(nodeu.getName()) || !nodes.containsKey(nodev.getName())) {
+			throw new GraphException("Node does not exist");
+		}
 		GraphEdge edge = new GraphEdge(nodeu, nodev, type, label);
-		//add the edge to the first node
+		//add the edge to the list for the first node
 		edges.get(nodeu.getName()).add(edge);
-		//add the edge to the second node
+		//add the edge to the list for the second node
 		edges.get(nodev.getName()).add(edge);
 
 	}
