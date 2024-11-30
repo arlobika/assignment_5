@@ -67,39 +67,40 @@ public class Maze {
 	 * Depth first search to solve the maze
 	 */
 
-	private Iterator<GraphNode> DFS(int k, GraphNode go) throws GraphException {
+	private Iterator<GraphNode> DFS(int k, GraphNode currNode) throws GraphException {
 		//base case
-		if (go.getName() == end) {
-			path.add(go);
+		if (currNode.getName() == end) {
+			path.add(currNode);
 			return path.iterator();
 		}
 		//mark the node
-		go.mark(true);
+		currNode.mark(true);
 		//add the node to the path
-		path.add(go);
+		path.add(currNode);
 		//get the edges
-		Iterator<GraphEdge> edges = graph.incidentEdges(go);
+		Iterator<GraphEdge> edges = graph.incidentEdges(currNode);
 		//iterate over the edges
 		while (edges != null && edges.hasNext()) {
 			GraphEdge edge = edges.next();
-			//get the node
-			GraphNode node = edge.secondEndpoint();
-			//check if the node is marked
-			if (!node.isMarked()) {
+			//get the nextNode
+			GraphNode nextNode = edge.secondEndpoint();
+			//check if the nextNode is marked
+			if (!nextNode.isMarked()) {
 				int coinsNeeded = edge.getType();
 				if (coinsNeeded <= k) {
 					//recursive call
-					Iterator<GraphNode> result = DFS(k - coinsNeeded, node);
+					Iterator<GraphNode> result = DFS(k - coinsNeeded, nextNode);
 					if (result != null) {
 						return result;
 					}
+					k += coins; //add the coins back when backtracking
 				}
 			}
 		}
 		//remove the node from the path
 		path.remove(path.size() - 1);
 		//unmark the node
-		go.mark(false);
+		currNode.mark(false);
 		//return null
 		return null;
 	}
