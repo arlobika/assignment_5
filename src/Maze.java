@@ -9,11 +9,11 @@ import java.util.List;
 public class Maze {
 	// the graph of the maze
 	private Graph graph;
-	 // The starting node
+	// The starting node
 	private int start;
-	 // The end node
+	// The end node
 	private int end;
-	 // The number of coins
+	// The number of coins
 	private int coins;
 	//the path
 	private List<GraphNode> path;
@@ -45,7 +45,6 @@ public class Maze {
 	 * @return the graph
 	 */
 	public Graph getGraph() {
-//		return your graph
 		return graph;
 	}
 
@@ -54,54 +53,43 @@ public class Maze {
 	 * @return the path iterator or null if no path was found
 	 */
 	public Iterator<GraphNode> solve() {
-//		simply call your private DFS. If you come up with a different approach that's ok too.
-//		remember to always return an Iterator or null
 		try {
-			return DFS(coins, graph.getNode(start));
+			if (dfs(coins, graph.getNode(start))){
+				return path.iterator();
+			}
 		} catch (GraphException e) {
 			return null;
 		}
+		return null;
 	}
 
 	/**
 	 * Depth first search to solve the maze
 	 */
 
-	private Iterator<GraphNode> DFS(int k, GraphNode go) throws GraphException {
-		//base case
-		if (go.getName() == end) {
-			path.add(go);
-			return path.iterator();
+	private boolean dfs(int remainingCoins, GraphNode currentNode) throws GraphException {
+		path.add(currentNode); // Add node to path
+		currentNode.mark(true); // Mark node as visited
+
+		if (currentNode.getName() == end) { // Base case: reached end
+			return true;
 		}
-		//mark the node
-		go.mark(true);
-		//add the node to the path
-		path.add(go);
-		//get the edges
-		Iterator<GraphEdge> edges = graph.incidentEdges(go);
-		//iterate over the edges
-		while (edges != null && edges.hasNext()) {
+
+		Iterator<GraphEdge> edges = graph.incidentEdges(currentNode);
+		while (edges.hasNext()) {
 			GraphEdge edge = edges.next();
-			//get the node
-			GraphNode node = edge.secondEndpoint();
-			//check if the node is marked
-			if (!node.isMarked()) {
-				int coinsNeeded = edge.getType();
-				if (coinsNeeded <= k) {
-					//recursive call
-					Iterator<GraphNode> result = DFS(k - coinsNeeded, node);
-					if (result != null) {
-						return result;
-					}
+			GraphNode nextNode = edge.secondEndpoint().equals(currentNode) ? edge.firstEndpoint() : edge.secondEndpoint();
+
+			if (!nextNode.isMarked() && edge.getType() <= remainingCoins) {
+				if (dfs(remainingCoins - edge.getType(), nextNode)) {
+					return true; // Valid path found
 				}
 			}
 		}
-		//remove the node from the path
-		path.remove(path.size() - 1);
-		//unmark the node
-		go.mark(false);
-		//return null
-		return null;
+
+		path.remove(path.size() - 1); // Backtrack
+		currentNode.mark(false); // Unmark node
+		return false;
 	}
 
 	/**
@@ -110,11 +98,6 @@ public class Maze {
 	 */
 
 	private void readInput(BufferedReader inputReader) throws IOException, GraphException {
-//		Read the values S, A, L, and k
-//		pay attention when iterating over the input.. All testing input will be correctly formatted
-//		remember to identify the starting and ending rooms
-//		The input will have size A + A-1 and L + L-1 because every pair of nodes has its relationship inbetween them in the textual representation!
-//		To maintain this method cleaner, you may use the private helper method insertEdge
 		//read the number of nodes
 		int scaleFactor = Integer.parseInt(inputReader.readLine().trim());
 		int width = Integer.parseInt(inputReader.readLine().trim());
@@ -126,19 +109,19 @@ public class Maze {
 
 		for (int row = 0; row < mazeLines.length; row += 2) {
 			String rooms = mazeLines[row];
-			if (row + 1 < mazeLines.length) {
-				String walls = mazeLines[row + 1];
 
-				for (int col = 0; col < rooms.length(); col++) {
-					char roomChar = rooms.charAt(col);
-					handleRoom(roomChar, row / 2, col, width);
+			String walls = (row + 1 < mazeLines.length) ? mazeLines[row + 1] : null;
 
-					if (col < walls.length()) {
-						char wallChar = walls.charAt(col);
-						handleEdge(roomChar, wallChar, row / 2, col, width);
-					}
+			for (int col = 0; col < rooms.length(); col++) {
+				char roomChar = rooms.charAt(col);
+				handleRoom(roomChar, row / 2, col, width);
+
+				if (walls != null && col < walls.length()) {
+					char wallChar = walls.charAt(col);
+					handleEdge(roomChar, wallChar, row / 2, col, width);
 				}
 			}
+
 		}
 	}
 
