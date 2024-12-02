@@ -94,6 +94,7 @@ public class Maze {
 
 		path.remove(path.size() - 1); // Backtrack
 		currNode.mark(false); // Unmark the node
+
 		return false; // No path found from this node
 	}
 
@@ -106,7 +107,6 @@ public class Maze {
 
 	private void readInput(BufferedReader inputReader) throws IOException, GraphException {
 		//read the number of nodes
-		int scaleFactor = Integer.parseInt(inputReader.readLine().trim());
 		int width = Integer.parseInt(inputReader.readLine().trim());
 		int length = Integer.parseInt(inputReader.readLine().trim());
 		coins = Integer.parseInt(inputReader.readLine().trim());
@@ -163,11 +163,10 @@ public class Maze {
 	private void handleEdge(char roomChar, char wallChar, int row, int col, int width) throws GraphException {
 		int nodeIndex = row * width + col;
 		int neighbourIndex = nodeIndex + 1;
-		if (Character.isDigit(wallChar)) {
-			int coinsNeeded = Character.getNumericValue(wallChar);
-			insertEdge(nodeIndex, neighbourIndex, coinsNeeded, "door");
-		} else if (wallChar == 'c') {
+		if (wallChar == 'c') {
 			insertEdge(nodeIndex, neighbourIndex, 0, "corridor");
+		} else if (Character.isDigit(wallChar)) {
+			insertEdge(nodeIndex, neighbourIndex, Character.getNumericValue(wallChar), "door");
 		}
 	}
 	/**
