@@ -75,8 +75,6 @@ public class Maze {
 	 * @throws GraphException if graph operations fail
 	 */
 	private boolean DFS(int k, GraphNode currNode) throws GraphException {
-		System.out.println("DFS at node " + currNode.getName() + " with remaining coins: " + k);
-
 		if (currNode.getName() == end) { // Base case: reached the end
 			path.add(currNode);
 			return true;
@@ -93,8 +91,10 @@ public class Maze {
 			if (!nextNode.isMarked()) {
 				int coinsNeeded = edge.getType();
 				System.out.println("Checking edge from " + nextNode.getName() + " with " + coinsNeeded + " coins");
-				if (coinsNeeded <= k && DFS(k - coinsNeeded, nextNode)) {
+				if (coinsNeeded <= k) {
+					if (DFS(k - coinsNeeded, nextNode)) {
 						return true; // Path found
+					}
 				}
 			}
 		}
@@ -130,6 +130,12 @@ public class Maze {
 
 		String[] mazeLines = mazeLinesList.toArray(new String[0]);
 
+		// Dynamically calculate the width from the first room line
+		if (mazeLines.length > 0) {
+			System.out.println("Static width: " + mazeLines[1]);
+			width = mazeLines[1].length();
+		}
+		System.out.println("dynamic width: " + width);
 
 		graph = new Graph(width * length);
 
@@ -139,17 +145,11 @@ public class Maze {
 			if (row + 1 < mazeLines.length) {
 				String walls = mazeLines[row + 1];
 				System.out.println("Walls: " + walls);
-
-				//check if the rooms and walls have the same length
-				if(rooms.length() != walls.length()){
-					throw new IOException("Inconsistent maze input");
-				}
-
 				for (int col = 0; col < rooms.length(); col++) {
 					char roomChar = rooms.charAt(col);
 					handleRoom(roomChar, row / 2, col, width);
 
-					if (walls.length() > col) {
+					if (col < walls.length()) {
 						char wallChar = walls.charAt(col);
 						handleEdge(roomChar, wallChar, row / 2, col, width);
 					}
@@ -168,14 +168,8 @@ public class Maze {
 	private void handleRoom(char roomChar, int row, int col, int width) {
 		int nodeIndex = row * width + col;
 		System.out.println("Handling room: " + roomChar + " at node index " + nodeIndex);
-		if (roomChar == 's') {
-			start = nodeIndex;
-			System.out.println("Start node set to: " + start);
-		}
-		if (roomChar == 'x') {
-			end = nodeIndex;
-			System.out.println("End node set to: " + end);
-		}
+		if (roomChar == 's') start = nodeIndex;
+		if (roomChar == 'x') end = nodeIndex;
 	}
 
 	/**
@@ -189,27 +183,18 @@ public class Maze {
 	 */
 	private void handleEdge(char roomChar, char wallChar, int row, int col, int width) throws GraphException {
 		int nodeIndex = row * width + col;
-		int rightNodeIndex = nodeIndex + 1;//horizontal edge
-		int bottomNodeIndex = nodeIndex + width;//vertical edge
-
+		int neighbourIndex = nodeIndex + 1;
+		//System.out.println("Handling edge between " + nodeIndex + " and " + neighbourIndex + " with wallChar: " + wallChar);
 		if(wallChar == 'o'){
-			//skip "o" as it is not a valid wall/door
+			//skip "o" as its not a valid wall/door
 			System.out.println("Skipping edge with wallChar: " + wallChar);
 			return;
 		}
-		// handle horizontal edge
+
 		if (wallChar == 'c') {
-			insertEdge(nodeIndex, rightNodeIndex, 0, "corridor");
+			insertEdge(nodeIndex, neighbourIndex, 0, "corridor");
 		} else if (Character.isDigit(wallChar)) {
-			int type = Character.getNumericValue(wallChar);
-			insertEdge(nodeIndex, rightNodeIndex, type, "door");
-		}
-		// handle vertical edge
-		if (row + 1 < width) {
-            if (Character.isDigit(wallChar)) {
-				int type = Character.getNumericValue(wallChar);
-				insertEdge(nodeIndex, bottomNodeIndex, type, "door");
-			}
+			insertEdge(nodeIndex, neighbourIndex, Character.getNumericValue(wallChar), "door");
 		}
 	}
 	/**
@@ -221,27 +206,9 @@ public class Maze {
 	 * @throws GraphException if edge creation fails
 	 */
 	private void insertEdge(int node1, int node2, int edgeType, String label) throws GraphException {
-// Validate if nodes exist in the graph
-		try {
-			// Use getNode to ensure both nodes exist
-			GraphNode u = graph.getNode(node1);
-			GraphNode v = graph.getNode(node2);
-
-			// Check if an edge already exists
-			Iterator<GraphEdge> incidentEdges = graph.incidentEdges(u);
-			while (incidentEdges != null && incidentEdges.hasNext()) {
-				GraphEdge edge = incidentEdges.next();
-				if (edge.firstEndpoint().equals(v) || edge.secondEndpoint().equals(v)) {
-					System.out.println("Edge already exists between " + node1 + " and " + node2);
-					return; // Skip duplicate edges
-				}
-			}
-
-			// Insert the edge if validation passes
-			System.out.println("Inserting edge between " + node1 + " and " + node2 + " with type: " + edgeType);
-			graph.insertEdge(u, v, edgeType, label);
-		} catch (GraphException e) {
-			System.err.println("Failed to insert edge: " + e.getMessage());
-		}
+		System.out.println("Inserting edge between " + node1 + " and " + node2 + " with type: " + edgeType);
+		GraphNode u = graph.getNode(node1);
+		GraphNode v = graph.getNode(node2);
+		graph.insertEdge(u, v, edgeType, label);
 	}
 }
