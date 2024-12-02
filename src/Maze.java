@@ -10,9 +10,9 @@ public class Maze {
 	// the graph of the maze
 	private Graph graph;
 	 // The starting node
-	private int start;
+	private int start = -1;
 	 // The end node
-	private int end;
+	private int end = -1;
 	 // The number of coins
 	private int coins;
 	//the path
@@ -29,6 +29,9 @@ public class Maze {
 		try {
 			BufferedReader inputReader = new BufferedReader(new FileReader(new File(inputFile)));
 			readInput(inputReader);
+			if (start == -1 || end == -1) {
+				throw new MazeException("Invalid maze: missing start or end");
+			}
 
 		} catch (IOException | GraphException e) {
 			throw new MazeException("Error reading maze file");
@@ -52,11 +55,14 @@ public class Maze {
 	public Iterator<GraphNode> solve() {
 
 		try {
+			System.out.println("Starting Dfs from node " + start + " with " + coins + " coins");
 			if(DFS(coins, graph.getNode(start))){
+				System.out.println("Path found");
 				return path.iterator();
 			}
+			System.out.println("No path found");
 		} catch (GraphException e) {
-			e.printStackTrace();
+			System.err.println("Error during solving: " + e.getMessage());
 		}
 		return null;
 	}
@@ -84,6 +90,7 @@ public class Maze {
 
 			if (!nextNode.isMarked()) {
 				int coinsNeeded = edge.getType();
+				System.out.println("Checking edge from " + nextNode.getName() + " with " + coinsNeeded + " coins");
 				if (coinsNeeded <= k) {
 					if (DFS(k - coinsNeeded, nextNode)) {
 						return true; // Path found
@@ -91,7 +98,7 @@ public class Maze {
 				}
 			}
 		}
-
+		System.out.println("backtracking from node: " + currNode.getName());
 		path.remove(path.size() - 1); // Backtrack
 		currNode.mark(false); // Unmark the node
 
@@ -141,14 +148,8 @@ public class Maze {
 	 */
 	private void handleRoom(char roomChar, int row, int col, int width) {
 		int nodeIndex = row * width + col;
-		switch (roomChar) {
-			case 's':
-				start = nodeIndex;
-				break;
-			case 'x':
-				end = nodeIndex;
-				break;
-		}
+		if (roomChar == 's') start = nodeIndex;
+		if (roomChar == 'x') end = nodeIndex;
 	}
 
 	/**
