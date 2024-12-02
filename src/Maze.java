@@ -119,10 +119,19 @@ public class Maze {
 		coins = Integer.parseInt(inputReader.readLine().trim());
 		System.out.println("Width: " + width + ", Length: " + length + ", Coins: " + coins);
 
+		// Read the rest of the maze lines
+		List<String> mazeLinesList = new ArrayList<>();
+		String line;
+		while ((line = inputReader.readLine()) != null) {
+			mazeLinesList.add(line);
+		}
 
-		String[] mazeLines = inputReader.lines().toArray(String[]::new);
+		String[] mazeLines = mazeLinesList.toArray(new String[0]);
 
-		width = mazeLines[0].length();
+		// Dynamically calculate the width from the first room line
+		if (mazeLines.length > 0) {
+			width = mazeLines[0].length();
+		}
 		System.out.println("dynamic width: " + width);
 
 		graph = new Graph(width * length);
