@@ -124,16 +124,13 @@ public class Maze {
 		String line;
 		while ((line = inputReader.readLine()) != null) {
 			mazeLinesList.add(line);
-			System.out.println("Read line: " + line);
-
 		}
 
 		String[] mazeLines = mazeLinesList.toArray(new String[0]);
 
 		// Dynamically calculate the width from the first room line
 		if (mazeLines.length > 0) {
-			System.out.println("Static width: " + mazeLines[1]);
-			width = mazeLines[1].length();
+			width = mazeLines[0].length();
 		}
 		System.out.println("dynamic width: " + width);
 
