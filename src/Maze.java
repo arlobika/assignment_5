@@ -55,63 +55,15 @@ public class Maze {
 	public Iterator<GraphNode> solve() {
 
 		try {
-<<<<<<< HEAD
 			System.out.println("Starting Dfs from node " + start + " with " + coins + " coins");
 			if(DFS(coins, graph.getNode(start))){
 				System.out.println("Path found");
 				return path.iterator();
-=======
-			return DFS(coins, graph.getNode(start));
-		} catch (GraphException e) {
-			return null;
-		}
-	}
-
-	/**
-	 * Depth first search to solve the maze
-	 */
-
-	private Iterator<GraphNode> DFS(int k, GraphNode go) throws GraphException {
-		//base case
-		if (go.getName() == end) {
-			path.add(go);
-			return path.iterator();
-		}
-		//mark the node
-		go.mark(true);
-		//add the node to the path
-		path.add(go);
-		//get the edges
-		Iterator<GraphEdge> edges = graph.incidentEdges(go);
-		//iterate over the edges
-		while (edges != null && edges.hasNext()) {
-			GraphEdge edge = edges.next();
-			//get the node
-			GraphNode node = edge.secondEndpoint();
-			//check if the node is marked
-			if (!node.isMarked()) {
-				int coinsNeeded = edge.getType();
-				if (coinsNeeded <= k) {
-					//recursive call
-					Iterator<GraphNode> result = DFS(k - coinsNeeded, node);
-					if (result != null) {
-						return result;
-					}
-				}
->>>>>>> parent of ca90c60 (Update Maze.java)
 			}
 			System.out.println("No path found");
 		} catch (GraphException e) {
 			System.err.println("Error during solving: " + e.getMessage());
 		}
-<<<<<<< HEAD
-=======
-		//remove the node from the path
-		path.remove(path.size() - 1);
-		//unmark the node
-		go.mark(false);
-		//return null
->>>>>>> parent of ca90c60 (Update Maze.java)
 		return null;
 	}
 
