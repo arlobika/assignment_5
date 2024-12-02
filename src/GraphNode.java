@@ -10,7 +10,7 @@ public class GraphNode {
 	}
 
 	
-//	setters and getters, should be fun
+//	setters and getters
 	public void mark(boolean mark) {
 		this.marked = mark;
 	}
