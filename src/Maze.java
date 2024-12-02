@@ -117,22 +117,15 @@ public class Maze {
 		int width = Integer.parseInt(inputReader.readLine().trim());
 		int length = Integer.parseInt(inputReader.readLine().trim());
 		coins = Integer.parseInt(inputReader.readLine().trim());
-		System.out.println("Width: " + width + ", Length: " + length + ", Coins: " + coins);
-
-
-		String[] mazeLines = inputReader.lines().toArray(String[]::new);
-
-		width = mazeLines[0].length();
-		System.out.println("dynamic width: " + width);
 
 		graph = new Graph(width * length);
+		String[] mazeLines = inputReader.lines().toArray(String[]::new);
 
 		for (int row = 0; row < mazeLines.length; row += 2) {
 			String rooms = mazeLines[row];
-			System.out.println("Rooms: " + rooms);
 			if (row + 1 < mazeLines.length) {
 				String walls = mazeLines[row + 1];
-				System.out.println("Walls: " + walls);
+
 				for (int col = 0; col < rooms.length(); col++) {
 					char roomChar = rooms.charAt(col);
 					handleRoom(roomChar, row / 2, col, width);
@@ -155,7 +148,6 @@ public class Maze {
 	 */
 	private void handleRoom(char roomChar, int row, int col, int width) {
 		int nodeIndex = row * width + col;
-		System.out.println("Handling room: " + roomChar + " at node index " + nodeIndex);
 		if (roomChar == 's') start = nodeIndex;
 		if (roomChar == 'x') end = nodeIndex;
 	}
@@ -172,13 +164,6 @@ public class Maze {
 	private void handleEdge(char roomChar, char wallChar, int row, int col, int width) throws GraphException {
 		int nodeIndex = row * width + col;
 		int neighbourIndex = nodeIndex + 1;
-		//System.out.println("Handling edge between " + nodeIndex + " and " + neighbourIndex + " with wallChar: " + wallChar);
-		if(wallChar == 'o'){
-			//skip "o" as its not a valid wall/door
-			System.out.println("Skipping edge with wallChar: " + wallChar);
-			return;
-		}
-
 		if (wallChar == 'c') {
 			insertEdge(nodeIndex, neighbourIndex, 0, "corridor");
 		} else if (Character.isDigit(wallChar)) {
@@ -194,7 +179,6 @@ public class Maze {
 	 * @throws GraphException if edge creation fails
 	 */
 	private void insertEdge(int node1, int node2, int edgeType, String label) throws GraphException {
-		System.out.println("Inserting edge between " + node1 + " and " + node2 + " with type: " + edgeType);
 		GraphNode u = graph.getNode(node1);
 		GraphNode v = graph.getNode(node2);
 		graph.insertEdge(u, v, edgeType, label);
