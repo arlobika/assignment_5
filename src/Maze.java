@@ -62,6 +62,10 @@ public class Maze {
 	}
 
 	/**
+	 * Depth first search to solve the maze
+	 */
+
+	/**
 	 * Depth-first search to find a path from start to end within the coin constraint.
 	 * @param k the number of coins remaining
 	 * @param currNode the current node
