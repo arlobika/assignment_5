@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Graph implements GraphADT {
-	
-//	Create an adjacency list or an adjacency matrix, a list is probably easier
+
 	/**
 	 *
 	 * The nodes of the graph
@@ -22,7 +21,6 @@ public class Graph implements GraphADT {
 	 * @param n the number of nodes
 	 */
 	public Graph(int n) {
-//		initialize your representation with empty adjacency lists
 		//initialize the nodes
 		for (int i = 0; i < n; i++) {
 			nodes.put(i, new GraphNode(i));
@@ -39,8 +37,6 @@ public class Graph implements GraphADT {
 	 */
 	@Override
 	public void insertEdge(GraphNode nodeu, GraphNode nodev, int type, String label) throws GraphException {
-//		create and insert the edge
-//		REMEMBER, an edge is accessible from both endpoints, so make sure you add it as an edge for both end nodes
 	//create the edge
 
 		//check if the nodes exist
