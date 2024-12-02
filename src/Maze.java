@@ -17,10 +17,6 @@ public class Maze {
 	private int coins;
 	//the path
 	private List<GraphNode> path;
-	//the number of coins collected
-	private int coinsCollected;
-
-	private DrawMaze display;
 	/**
 	 * Constructor for the maze
 	 * @param inputFile the input file
@@ -28,14 +24,12 @@ public class Maze {
 	 */
 
 	public Maze(String inputFile) throws MazeException {
-		this.display = display;
 		//initialize the path
 		path = new ArrayList<>();
-		//initialize the coins collected
-		coinsCollected = 0;
 		try {
 			BufferedReader inputReader = new BufferedReader(new FileReader(new File(inputFile)));
 			readInput(inputReader);
+
 		} catch (IOException | GraphException e) {
 			throw new MazeException("Error reading maze file");
 		}
@@ -52,73 +46,69 @@ public class Maze {
 	}
 
 	/**
-	 * Solve the maze using DFS
+	 * Solve the maze and returns an iterator
 	 * @return the path iterator or null if no path was found
 	 */
 	public Iterator<GraphNode> solve() {
-//		simply call your private DFS. If you come up with a different approach that's ok too.
-//		remember to always return an Iterator or null
+
 		try {
-			return DFS(coins, graph.getNode(start));
+			if(DFS(coins, graph.getNode(start))){
+				return path.iterator();
+			}
 		} catch (GraphException e) {
-			return null;
+			e.printStackTrace();
 		}
+		return null;
 	}
 
 	/**
 	 * Depth first search to solve the maze
 	 */
 
-	private Iterator<GraphNode> DFS(int k, GraphNode currNode) throws GraphException {
-		//base case
-		if (currNode.getName() == end) {
+	/**
+	 * Depth-first search to find a path from start to end within the coin constraint.
+	 * @param k the number of coins remaining
+	 * @param currNode the current node
+	 * @return true if a path is found, false otherwise
+	 * @throws GraphException if graph operations fail
+	 */
+	private boolean DFS(int k, GraphNode currNode) throws GraphException {
+		if (currNode.getName() == end) { // Base case: reached the end
 			path.add(currNode);
-			return path.iterator();
+			return true;
 		}
-		//mark the node
-		currNode.mark(true);
-		//add the node to the path
-		path.add(currNode);
-		//get the edges
+
+		currNode.mark(true); // Mark the node as visited
+		path.add(currNode); // Add node to the current path
+
 		Iterator<GraphEdge> edges = graph.incidentEdges(currNode);
-		//iterate over the edges
 		while (edges != null && edges.hasNext()) {
 			GraphEdge edge = edges.next();
-			//get the nextNode
-			GraphNode nextNode = edge.secondEndpoint();
-			//check if the nextNode is marked
+			GraphNode nextNode = edge.firstEndpoint().equals(currNode) ? edge.secondEndpoint() : edge.firstEndpoint();
+
 			if (!nextNode.isMarked()) {
 				int coinsNeeded = edge.getType();
 				if (coinsNeeded <= k) {
-					display.drawEdge(currNode, nextNode); //replace currNode with nextNode
-					//recursive call
-					Iterator<GraphNode> result = DFS(k - coinsNeeded, nextNode);
-					if (result != null) {
-						return result;
+					if (DFS(k - coinsNeeded, nextNode)) {
+						return true; // Path found
 					}
-					k += coins; //add the coins back when backtracking
 				}
 			}
 		}
-		//remove the node from the path
-		path.remove(path.size() - 1);
-		//unmark the node
-		currNode.mark(false);
-		//return null
-		return null;
+
+		path.remove(path.size() - 1); // Backtrack
+		currNode.mark(false); // Unmark the node
+		return false; // No path found from this node
 	}
 
 	/**
-	 * Read the input
-	 * and initialize the graph
+	 * Reads the maze input file and constructs the graph.
+	 * @param inputReader buffered reader for the input file
+	 * @throws IOException if there is an error reading the file
+	 * @throws GraphException if graph operations fail
 	 */
 
 	private void readInput(BufferedReader inputReader) throws IOException, GraphException {
-//		Read the values S, A, L, and k
-//		pay attention when iterating over the input.. All testing input will be correctly formatted
-//		remember to identify the starting and ending rooms
-//		The input will have size A + A-1 and L + L-1 because every pair of nodes has its relationship inbetween them in the textual representation!
-//		To maintain this method cleaner, you may use the private helper method insertEdge
 		//read the number of nodes
 		int scaleFactor = Integer.parseInt(inputReader.readLine().trim());
 		int width = Integer.parseInt(inputReader.readLine().trim());
@@ -146,15 +136,14 @@ public class Maze {
 		}
 	}
 
-	/*
-	 * Handle the room
-	 * @param roomChar the room character
-	 * @param row the row
-	 * @param col the column
-	 * @param width the width
-	 * @throws GraphException if the room is invalid
+	/**
+	 * Processes a room character and identifies the start and end nodes.
+	 * @param roomChar the character representing the room
+	 * @param row the row of the room
+	 * @param col the column of the room
+	 * @param width the width of the maze
 	 */
-	private void handleRoom(char roomChar, int row, int col, int width) throws GraphException {
+	private void handleRoom(char roomChar, int row, int col, int width) {
 		int nodeIndex = row * width + col;
 		switch (roomChar) {
 			case 's':
@@ -163,38 +152,35 @@ public class Maze {
 			case 'x':
 				end = nodeIndex;
 				break;
-			default:
-				break;
 		}
 	}
 
 	/**
-	 * Handle the edge
-	 * @param roomChar the room character
-	 * @param wallChar the wall character
-	 * @param row the row
-	 * @param col the column
-	 * @param width the width
-	 * @throws GraphException if the edge is invalid
+	 * Handles edge creation based on the wall character.
+	 * @param roomChar the character of the room
+	 * @param wallChar the character of the wall or door
+	 * @param row the row of the room
+	 * @param col the column of the room
+	 * @param width the width of the maze
+	 * @throws GraphException if edge creation fails
 	 */
 	private void handleEdge(char roomChar, char wallChar, int row, int col, int width) throws GraphException {
 		int nodeIndex = row * width + col;
 		int neighbourIndex = nodeIndex + 1;
 		if (Character.isDigit(wallChar)) {
 			int coinsNeeded = Character.getNumericValue(wallChar);
-			insertEdge(nodeIndex, neighbourIndex,coinsNeeded,"door");
-		}
-		else {
-			insertEdge(nodeIndex, neighbourIndex,0,"corridor");
+			insertEdge(nodeIndex, neighbourIndex, coinsNeeded, "door");
+		} else if (wallChar == 'c') {
+			insertEdge(nodeIndex, neighbourIndex, 0, "corridor");
 		}
 	}
 	/**
-	 * Insert an edge
+	 * Inserts an edge between two nodes in the graph.
 	 * @param node1 the first node
 	 * @param node2 the second node
 	 * @param edgeType the type of the edge
 	 * @param label the label of the edge
-	 * @throws GraphException if the edge is invalid
+	 * @throws GraphException if edge creation fails
 	 */
 	private void insertEdge(int node1, int node2, int edgeType, String label) throws GraphException {
 		GraphNode u = graph.getNode(node1);
