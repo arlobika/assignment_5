@@ -20,6 +20,7 @@ public class Maze {
 	//the number of coins collected
 	private int coinsCollected;
 
+	private DrawMaze display;
 	/**
 	 * Constructor for the maze
 	 * @param inputFile the input file
@@ -27,6 +28,7 @@ public class Maze {
 	 */
 
 	public Maze(String inputFile) throws MazeException {
+		this.display = display;
 		//initialize the path
 		path = new ArrayList<>();
 		//initialize the coins collected
@@ -88,6 +90,7 @@ public class Maze {
 			if (!nextNode.isMarked()) {
 				int coinsNeeded = edge.getType();
 				if (coinsNeeded <= k) {
+					display.drawEdge(currNode, nextNode); //replace currNode with nextNode
 					//recursive call
 					Iterator<GraphNode> result = DFS(k - coinsNeeded, nextNode);
 					if (result != null) {
