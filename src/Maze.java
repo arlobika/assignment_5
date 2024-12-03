@@ -101,24 +101,20 @@ public class Maze {
 			}
 
 			// Debugging: Log the edge and next node
-			System.out.println("Considering edge to node: " + nextNode.getName() + ", Coins needed: " + edge.getType());
+			int coinsNeeded = edge.getType();
+			System.out.println("Considering edge to node: " + nextNode.getName() + ", Coins needed: " + coinsNeeded);
 
 			// Skip already visited nodes
-			if (!nextNode.isMarked()) {
-				int coinsNeeded = edge.getType();
+			if (!nextNode.isMarked() && coinsNeeded <= remainingCoins) {
+				System.out.println("Traversing edge to node: " + nextNode.getName() + ", Coins needed: " + coinsNeeded);
 
-				// Check if there are enough coins to traverse the edge
-				if (coinsNeeded <= remainingCoins) {
-					System.out.println("Traversing edge to node: " + nextNode.getName() + ", Coins needed: " + coinsNeeded);
+				// Recursively attempt to solve from the next node
+				Iterator<GraphNode> result = DFS(remainingCoins - coinsNeeded, nextNode);
+				if (result != null) return result;
 
-					// Recursively attempt to solve from the next node
-					Iterator<GraphNode> result = dfs(remainingCoins - coinsNeeded, nextNode);
-					if (result != null) return result;
-
-					// Restore coins if backtracking
-					System.out.println("Backtracking from node: " + nextNode.getName());
-					remainingCoins += coinsNeeded;
-				}
+				// Restore coins if backtracking
+				System.out.println("Backtracking from node: " + nextNode.getName());
+				remainingCoins += coinsNeeded;
 			}
 		}
 
@@ -130,6 +126,7 @@ public class Maze {
 		// If no solution is found, return null
 		return null;
 	}
+
 
 
 
