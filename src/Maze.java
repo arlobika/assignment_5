@@ -151,22 +151,27 @@ public class Maze {
 
 		for (int row = 0; row < mazeLines.length; row += 2) {
 			String rooms = mazeLines[row];
+			System.out.println("Processing row: " + row + " -> " + rooms); // Add this debugging line
+
 			if (row + 1 < mazeLines.length) {
 				String walls = mazeLines[row + 1];
+				System.out.println("Processing walls: " + (row + 1) + " -> " + walls); // Add this debugging line
 
 				for (int col = 0; col < rooms.length(); col++) {
 					char roomChar = rooms.charAt(col);
-					handleRoom(roomChar, row / 2, col, width);
+					handleRoom(roomChar, row / 2, col, width); // Process rooms
 
 					if (col < walls.length()) {
 						char wallChar = walls.charAt(col);
-						handleEdge(roomChar, wallChar, row / 2, col, width);
+						handleEdge(roomChar, wallChar, row / 2, col, width); // Process edges
 					}
 				}
 			}
 		}
 
-		System.out.println("Start node: " + start + ", End node: " + end);
+
+		System.out.println("Final check: Start node = " + start + ", End node = " + end);
+
 	}
 
 	/*
@@ -179,12 +184,14 @@ public class Maze {
 	 */
 	private void handleRoom(char roomChar, int row, int col, int width) throws GraphException {
 		int nodeIndex = row * width + col; // Calculate the node index based on grid position
+		System.out.println("Parsing room: " + roomChar + " at index: " + nodeIndex); // Debugging
+
 		switch (roomChar) {
-			case 's':
+			case 's': // Start node
 				start = nodeIndex;
 				System.out.println("Start node found at index: " + start);
 				break;
-			case 'x':
+			case 'x': // End node
 				end = nodeIndex;
 				System.out.println("End node found at index: " + end);
 				break;
@@ -192,6 +199,8 @@ public class Maze {
 				break;
 		}
 	}
+
+
 
 	/**
 	 * Handle the edge
@@ -206,6 +215,8 @@ public class Maze {
 		int nodeIndex = row * width + col;
 		int neighborIndex = nodeIndex + 1;
 
+		System.out.println("Parsing edge: " + wallChar + " between nodes " + nodeIndex + " and " + neighborIndex);
+
 		if (Character.isDigit(wallChar)) {
 			int coinsNeeded = Character.getNumericValue(wallChar);
 			insertEdge(nodeIndex, neighborIndex, coinsNeeded, "door");
@@ -217,6 +228,7 @@ public class Maze {
 			edge.setType(0); // Set type for corridor edges
 		}
 	}
+
 	/**
 	 * Insert an edge
 	 * @param node1 the first node
