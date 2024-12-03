@@ -54,43 +54,84 @@ public class Maze {
 	 */
 	public Iterator<GraphNode> solve() {
 		try {
-			if (dfs(coins, graph.getNode(start))){
-				return path.iterator();
+			System.out.println("Starting solve...");
+			Iterator<GraphNode> solution = dfs(coins, graph.getNode(start));
+			if (solution != null) {
+				System.out.println("Solution found!");
+			} else {
+				System.out.println("No solution exists.");
 			}
+			return solution;
 		} catch (GraphException e) {
+			System.out.println("GraphException occurred: " + e.getMessage());
 			return null;
 		}
-		return null;
 	}
+
 
 	/**
 	 * Depth first search to solve the maze
 	 */
 
-	private boolean dfs(int remainingCoins, GraphNode currentNode) throws GraphException {
-		path.add(currentNode); // Add node to path
-		currentNode.mark(true); // Mark node as visited
+	private Iterator<GraphNode> dfs(int remainingCoins, GraphNode currentNode) throws GraphException {
+		// Debugging: Log the current state
+		System.out.println("Visiting node: " + currentNode.getName() + ", Remaining coins: " + remainingCoins);
+		System.out.println("Current path: " + path);
 
-		if (currentNode.getName() == end) { // Base case: reached end
-			return true;
+		// Base case: If the end node is reached
+		if (currentNode.getName() == end) {
+			path.add(currentNode);
+			System.out.println("End node reached! Path: " + path);
+			return path.iterator();
 		}
 
-		Iterator<GraphEdge> edges = graph.incidentEdges(currentNode);
-		while (edges.hasNext()) {
-			GraphEdge edge = edges.next();
-			GraphNode nextNode = edge.secondEndpoint().equals(currentNode) ? edge.firstEndpoint() : edge.secondEndpoint();
+		// Mark the current node as visited and add it to the path
+		currentNode.mark(true);
+		path.add(currentNode);
 
-			if (!nextNode.isMarked() && edge.getType() <= remainingCoins) {
-				if (dfs(remainingCoins - edge.getType(), nextNode)) {
-					return true; // Valid path found
+		// Iterate over all edges connected to the current node
+		Iterator<GraphEdge> edges = graph.incidentEdges(currentNode);
+		while (edges != null && edges.hasNext()) {
+			GraphEdge edge = edges.next();
+
+			// Determine the next node based on the edge
+			GraphNode nextNode = edge.secondEndpoint();
+			if (nextNode == currentNode) {
+				nextNode = edge.firstEndpoint(); // Handle undirected edge
+			}
+
+			// Debugging: Log the edge and next node
+			System.out.println("Considering edge to node: " + nextNode.getName() + ", Coins needed: " + edge.getType());
+
+			// Skip already visited nodes
+			if (!nextNode.isMarked()) {
+				int coinsNeeded = edge.getType();
+
+				// Check if there are enough coins to traverse the edge
+				if (coinsNeeded <= remainingCoins) {
+					System.out.println("Traversing edge to node: " + nextNode.getName() + ", Coins needed: " + coinsNeeded);
+
+					// Recursively attempt to solve from the next node
+					Iterator<GraphNode> result = dfs(remainingCoins - coinsNeeded, nextNode);
+					if (result != null) return result;
+
+					// Restore coins if backtracking
+					System.out.println("Backtracking from node: " + nextNode.getName());
+					remainingCoins += coinsNeeded;
 				}
 			}
 		}
 
-		path.remove(path.size() - 1); // Backtrack
-		currentNode.mark(false); // Unmark node
-		return false;
+		// Backtrack: remove the current node from the path and unmark it
+		System.out.println("Removing node from path: " + currentNode.getName());
+		path.remove(path.size() - 1);
+		currentNode.mark(false);
+
+		// If no solution is found, return null
+		return null;
 	}
+
+
 
 	/**
 	 * Read the input
@@ -98,7 +139,6 @@ public class Maze {
 	 */
 
 	private void readInput(BufferedReader inputReader) throws IOException, GraphException {
-		//read the number of nodes
 		int scaleFactor = Integer.parseInt(inputReader.readLine().trim());
 		int width = Integer.parseInt(inputReader.readLine().trim());
 		int length = Integer.parseInt(inputReader.readLine().trim());
@@ -107,22 +147,26 @@ public class Maze {
 		graph = new Graph(width * length);
 		String[] mazeLines = inputReader.lines().toArray(String[]::new);
 
+		System.out.println("Reading maze input...");
+
 		for (int row = 0; row < mazeLines.length; row += 2) {
 			String rooms = mazeLines[row];
+			if (row + 1 < mazeLines.length) {
+				String walls = mazeLines[row + 1];
 
-			String walls = (row + 1 < mazeLines.length) ? mazeLines[row + 1] : null;
+				for (int col = 0; col < rooms.length(); col++) {
+					char roomChar = rooms.charAt(col);
+					handleRoom(roomChar, row / 2, col, width);
 
-			for (int col = 0; col < rooms.length(); col++) {
-				char roomChar = rooms.charAt(col);
-				handleRoom(roomChar, row / 2, col, width);
-
-				if (walls != null && col < walls.length()) {
-					char wallChar = walls.charAt(col);
-					handleEdge(roomChar, wallChar, row / 2, col, width);
+					if (col < walls.length()) {
+						char wallChar = walls.charAt(col);
+						handleEdge(roomChar, wallChar, row / 2, col, width);
+					}
 				}
 			}
-
 		}
+
+		System.out.println("Start node: " + start + ", End node: " + end);
 	}
 
 	/*
@@ -134,13 +178,15 @@ public class Maze {
 	 * @throws GraphException if the room is invalid
 	 */
 	private void handleRoom(char roomChar, int row, int col, int width) throws GraphException {
-		int nodeIndex = row * width + col;
+		int nodeIndex = row * width + col; // Calculate the node index based on grid position
 		switch (roomChar) {
 			case 's':
 				start = nodeIndex;
+				System.out.println("Start node found at index: " + start);
 				break;
 			case 'x':
 				end = nodeIndex;
+				System.out.println("End node found at index: " + end);
 				break;
 			default:
 				break;
@@ -158,13 +204,17 @@ public class Maze {
 	 */
 	private void handleEdge(char roomChar, char wallChar, int row, int col, int width) throws GraphException {
 		int nodeIndex = row * width + col;
-		int neighbourIndex = nodeIndex + 1;
+		int neighborIndex = nodeIndex + 1;
+
 		if (Character.isDigit(wallChar)) {
 			int coinsNeeded = Character.getNumericValue(wallChar);
-			insertEdge(nodeIndex, neighbourIndex,coinsNeeded,"door");
-		}
-		else {
-			insertEdge(nodeIndex, neighbourIndex,0,"corridor");
+			insertEdge(nodeIndex, neighborIndex, coinsNeeded, "door");
+			GraphEdge edge = graph.getEdge(graph.getNode(nodeIndex), graph.getNode(neighborIndex));
+			edge.setType(coinsNeeded); // Set type for door edges
+		} else if (wallChar == 'c') {
+			insertEdge(nodeIndex, neighborIndex, 0, "corridor");
+			GraphEdge edge = graph.getEdge(graph.getNode(nodeIndex), graph.getNode(neighborIndex));
+			edge.setType(0); // Set type for corridor edges
 		}
 	}
 	/**
