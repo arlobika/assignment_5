@@ -151,28 +151,32 @@ public class Maze {
 
 		for (int row = 0; row < mazeLines.length; row += 2) {
 			String rooms = mazeLines[row];
-			System.out.println("Processing row: " + row + " -> " + rooms); // Add this debugging line
+			System.out.println("Processing row: " + row + " -> " + rooms); // Debugging
 
-			if (row + 1 < mazeLines.length) {
+			if (row + 1 < mazeLines.length) { // Check for corresponding wall row
 				String walls = mazeLines[row + 1];
-				System.out.println("Processing walls: " + (row + 1) + " -> " + walls); // Add this debugging line
+				System.out.println("Processing walls: " + (row + 1) + " -> " + walls); // Debugging
 
 				for (int col = 0; col < rooms.length(); col++) {
 					char roomChar = rooms.charAt(col);
-					handleRoom(roomChar, row / 2, col, width); // Process rooms
+					handleRoom(roomChar, row / 2, col, width);
 
 					if (col < walls.length()) {
 						char wallChar = walls.charAt(col);
-						handleEdge(roomChar, wallChar, row / 2, col, width); // Process edges
+						handleEdge(roomChar, wallChar, row / 2, col, width);
 					}
+				}
+			} else { // Handle the last row if it doesn't have walls
+				for (int col = 0; col < rooms.length(); col++) {
+					char roomChar = rooms.charAt(col);
+					handleRoom(roomChar, row / 2, col, width); // Only process rooms
 				}
 			}
 		}
 
-
 		System.out.println("Final check: Start node = " + start + ", End node = " + end);
-
 	}
+
 
 	/*
 	 * Handle the room
